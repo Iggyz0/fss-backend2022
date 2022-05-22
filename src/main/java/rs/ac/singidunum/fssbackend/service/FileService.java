@@ -9,8 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import rs.ac.singidunum.fssbackend.entity.Audio;
 import rs.ac.singidunum.fssbackend.entity.FileFromUser;
+import rs.ac.singidunum.fssbackend.entity.Photo;
+import rs.ac.singidunum.fssbackend.model.AllFilesWrap;
+import rs.ac.singidunum.fssbackend.model.AudioModel;
 import rs.ac.singidunum.fssbackend.model.FileFromUserModel;
+import rs.ac.singidunum.fssbackend.model.PhotoModel;
 import rs.ac.singidunum.fssbackend.repository.IFileRepository;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,13 +34,24 @@ public class FileService implements IFileService {
     @Autowired
     private IFileRepository fileRepository;
     @Autowired
+    private AudioService audioService;
+    @Autowired
+    private PhotoService photoService;
+
+    @Autowired
     AutoMapperService autoMapperService;
     @Autowired
     FilePathService filePathService;
 
     @Override
-    public ArrayList<FileFromUser> findAllByUsername(String username) {
-        return this.fileRepository.findAllByUser_Username(username);
+    public AllFilesWrap findAllByUsername(String username) {
+        AllFilesWrap allFiles = new AllFilesWrap();
+
+        allFiles.setPhotos(this.photoService.findAllByUsername(username));
+        allFiles.setAudios(this.audioService.findAllByUsername(username));
+        allFiles.setFiles(this.fileRepository.findAllByUser_Username(username));
+
+        return allFiles;
     }
 
     @Override

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import rs.ac.singidunum.fssbackend.entity.FileFromUser;
+import rs.ac.singidunum.fssbackend.model.AllFilesWrap;
 import rs.ac.singidunum.fssbackend.service.FileService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +22,7 @@ public class FileController {
 
     @CrossOrigin(origins = "*")
     @GetMapping("findallbyusername")
-    public List<FileFromUser> findAllByUserName(@RequestParam("username") String username) {
+    public AllFilesWrap findAllByUserName(@RequestParam("username") String username) {
         return this.fileService.findAllByUsername(username);
     }
 
@@ -38,6 +39,12 @@ public class FileController {
     @CrossOrigin(origins = "*", exposedHeaders = HttpHeaders.CONTENT_DISPOSITION)
     @GetMapping("myfiles/downloadfile")
     public ResponseEntity<Resource> downloadFile(@RequestParam("id") String id, @RequestParam("username") String username, HttpServletRequest request) {
+        return this.fileService.downloadFileFromServer(id, username, request);
+    }
+
+    @CrossOrigin(origins = "*", exposedHeaders = HttpHeaders.CONTENT_DISPOSITION)
+    @GetMapping("myfiles/showfile")
+    public ResponseEntity<Resource> showFile(@RequestParam("id") String id, @RequestParam("username") String username, HttpServletRequest request) {
         return this.fileService.downloadFileFromServer(id, username, request);
     }
 }

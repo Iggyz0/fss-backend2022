@@ -43,4 +43,10 @@ public class AudioController {
     @CrossOrigin(origins = "*")
     @GetMapping("myaudio/search")
     public List<Audio> findAllBySearch(@RequestParam String search, @RequestParam String username) { return this.audioService.findAllBySearch(search, username); }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("myaudio/showaudio")
+    public ResponseEntity<Resource> showAudio(@RequestParam("fileName") String fileName, @RequestParam("username") String username, HttpServletRequest request) {
+        return this.audioService.downloadAudioFromServer(fileName, username, request);
+    }
 }

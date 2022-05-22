@@ -33,13 +33,26 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         String header = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION );
 
+        String token = "";
+
         if( isEmpty(header) || !header.startsWith("Bearer ") )
         {
-            filterChain.doFilter(httpServletRequest,httpServletResponse);
-            return;
+            if (httpServletRequest.getRequestURI().equals("/audio/myaudio/showaudio") || httpServletRequest.getRequestURI().equals("/photos/myphotos/showphoto") || httpServletRequest.getRequestURI().equals("/files/myfiles/showfile")) {
+                token = httpServletRequest.getParameter("access_token");
+                if (token.isEmpty() || token.trim().equals("")) {
+                    filterChain.doFilter(httpServletRequest, httpServletResponse);
+                    return;
+                }
+            } else {
+                filterChain.doFilter(httpServletRequest, httpServletResponse);
+                return;
+            }
+//            filterChain.doFilter(httpServletRequest, httpServletResponse);
+//            return;
         }
-
-        String token = header.split(" ")[1].trim();
+        else {
+            token = header.split(" ")[1].trim();
+        }
 
         if( !jwtToken.validate(token) ){
             filterChain.doFilter(httpServletRequest,httpServletResponse);
