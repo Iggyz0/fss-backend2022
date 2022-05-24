@@ -1,5 +1,6 @@
 package rs.ac.singidunum.fssbackend.service;
 
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -95,18 +96,69 @@ public class FileService implements IFileService {
     public List<FileFromUser> uploadFiles(MultipartFile[] files, String username) {
         final Path storageLocation = this.filePathService.userFilePath("file", username);
 
+        // sort files by type and upload them using audio/photo services
+        // if file is not an audio file or an image file - upload them using file service
+        ArrayList<MultipartFile> audioFiles = new ArrayList<>();
+        ArrayList<MultipartFile> photoFiles = new ArrayList<>();
+        ArrayList<MultipartFile> otherFiles = new ArrayList<>();
+
+        Tika tika = new Tika();
+
+        for (MultipartFile f : files) {
+            if (!f.isEmpty()) {
+                try {
+                    String type = tika.detect(f.getBytes());
+
+                    if (type.contains("audio")) {
+                        audioFiles.add(f);
+                    }
+                    else if (type.contains("image")) {
+                        photoFiles.add(f);
+                    }
+                    else {
+                        otherFiles.add(f);
+                    }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        if (audioFiles.size() > 0) {
+            try {
+                for (MultipartFile af : audioFiles) {
+                    this.audioService.insertAudio(af, username);
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (photoFiles.size() > 0) {
+            try {
+                for (MultipartFile pf : photoFiles) {
+                    this.photoService.insertPhoto(pf, username);
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         try {
             Files.createDirectories(storageLocation);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        if (files.length <= 0) {
+        if (otherFiles.size() <= 0) {
             return null;
         }
         ArrayList<FileFromUser> incomingFiles = new ArrayList<>();
 
-        for (MultipartFile file : files) {
+        for (MultipartFile file : otherFiles) {
             FileFromUserModel fileConverted = this.autoMapperService.mapIncomingFileToFileFromUserModel(file, username);
             incomingFiles.add(this.autoMapperService.map(fileConverted, FileFromUser.class));
         }
@@ -132,13 +184,11 @@ public class FileService implements IFileService {
         }
 
         try {
-//            var test35 = overlapping;
-//            var test25 = incomingFiles;
 
             if (overlapping.size() > 0) {
                 this.updateInDatabaseOnlyWithReplace(overlapping, username);
             }
-            for (MultipartFile file : files) {
+            for (MultipartFile file : otherFiles) {
                 this.storeFile(file, storageLocation);
             }
             if (incomingFiles.size() > 0)
