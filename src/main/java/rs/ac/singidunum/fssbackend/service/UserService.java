@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import rs.ac.singidunum.fssbackend.entity.User;
 import rs.ac.singidunum.fssbackend.model.UserModel;
@@ -17,9 +18,10 @@ public class UserService implements IUserService, UserDetailsService {
 
     @Autowired
     private IUserRepository userRepository;
-
     @Autowired
     private AutoMapperService autoMapperService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public User findByUsername(String username) {
@@ -57,6 +59,20 @@ public class UserService implements IUserService, UserDetailsService {
         else {
             return null;
         }
+    }
+
+    public User update(UserModel model) {
+        User userHelper = this.findById(model.getId());
+
+        if (model.getEmail() != null) { userHelper.setEmail(model.getEmail()); }
+
+        if (model.getPassword() != null) { userHelper.setPassword(passwordEncoder.encode(model.getPassword())); }
+
+        if (model.getFirstName() != null) { userHelper.setFirstName(model.getFirstName()); }
+
+        if (model.getLastName() != null) { userHelper.setLastName(model.getLastName()); }
+
+        return userRepository.save(userHelper);
     }
 
     @Override

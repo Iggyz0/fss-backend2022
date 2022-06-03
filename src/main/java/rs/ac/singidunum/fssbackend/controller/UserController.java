@@ -3,6 +3,7 @@ package rs.ac.singidunum.fssbackend.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.singidunum.fssbackend.entity.User;
+import rs.ac.singidunum.fssbackend.model.UserModel;
 import rs.ac.singidunum.fssbackend.service.UserService;
 
 @RestController
@@ -18,5 +19,11 @@ public class UserController {
     @CrossOrigin(origins = "*")
     @GetMapping("findbyusername")
     public User findByUsername(@RequestParam("username") String username) { return userService.findByUsername(username); }
+
+    @CrossOrigin(origins = "*")
+    @PutMapping("update")
+    public User update(@RequestBody UserModel model) {
+        return userService.update(model);
+    }
 
 }
